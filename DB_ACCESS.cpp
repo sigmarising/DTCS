@@ -297,7 +297,9 @@ bool DB_ACCESS::f_master_user_out(const int roomID) {
     QSqlQuery query2(db);
     query1.exec("SELECT * FROM `status` WHERE `id` = "
                 + QString::number(roomID));
-    query1.next();
+    if(!query1.next())
+        return false;
+
     query2.prepare(
                 "INSERT INTO `log`(`card_id`, `slave_id`, `speed`, `target_temp`, `cur_temp`)"
                 "VALUES(:`card_id`, :`slave_id`, :`speed`, :`target_temp`, :`cur_temp`)"

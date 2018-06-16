@@ -16,7 +16,6 @@ using namespace std;
 class MASTER {
 public:
     MASTER();
-    MASTER(MASTER &object);
     ~MASTER();
 
     bool f_set_switch_on();
@@ -38,6 +37,8 @@ public:
     vector<Info_Slave>      m_miniDB;           //  mini database to store the info now
 
 private:
+    MASTER(MASTER &object);
+
     string                  m_Admin_Key;        //  key for admin to login maybe no use
     int                     m_switch;           //  switch: on or off
     int                     m_mode;             //  master mode

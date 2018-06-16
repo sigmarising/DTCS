@@ -60,7 +60,9 @@ extern int g_season;
 #define TEMP_WINTER_DEFAULT 18
 
 //  define for update frequent (ms)
-#define FREQUENT_MASTER_DEFAULT    1000
+#define FREQUENT_MASTER_DEFAULT     1000
+#define FREQUENT_MASTER_MONEY       100
+#define FREQUENT_SLAVE_UPDATE       1000
 
 //  define for admin key default
 #define ADMIN_KEY   "admin"
@@ -81,9 +83,11 @@ extern int g_season;
 #define PROGRESS_WIND_1         double(1 /12500)
 #define PROGRESS_WIND_2         double(1 /10000)
 #define PROGRESS_WIND_3         double(1 / 7500)
+
+
 // define for temp progress max min
-#define PROGRESS_MIN            30
-#define PROGRESS_MAX            15
+#define PROGRESS_MIN            15
+#define PROGRESS_MAX            32
 
 
 //  define for season

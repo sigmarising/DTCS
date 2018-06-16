@@ -12,9 +12,7 @@
 //  -------------------------------------------------------
 class SLAVE {
 public:
-    SLAVE();
     SLAVE(string const roomID);
-    SLAVE(SLAVE &object);
     ~SLAVE();
 
     bool f_Login(string const ID);
@@ -35,6 +33,9 @@ public:
 
 
 private:
+    SLAVE();
+    SLAVE(SLAVE &object);
+
     bool    f_request(int const wind, int const temp);
 
     bool    m_auto_adjust;
