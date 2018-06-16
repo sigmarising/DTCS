@@ -1,4 +1,5 @@
 ﻿#include "DB_ACCESS.h"
+#include "Report.h"
 
 bool compare_log_record(const Log_record &x, const Log_record &y){
     if(x.date == y.date){
@@ -27,7 +28,7 @@ bool DB_ACCESS::f_master_switch_on() {
     if(flag)
         return true;
     else{
-        qDebug << query.lastError() << endl;
+        qDebug() << query.lastError() << endl;
 
         if(DEBUG_ALLOW_THROW)
             throw query.lastError();
@@ -40,7 +41,7 @@ bool DB_ACCESS::f_master_switch_on() {
 
 bool DB_ACCESS::f_master_switch_off() {
 
-    QSqlDatabase::transaction();
+    db.transaction();
 
     QSqlQuery query1(db);
     QSqlQuery query2(db);
@@ -51,25 +52,25 @@ bool DB_ACCESS::f_master_switch_off() {
                 );
     while (query1.next()) {
         if(0 != query1.value(4).toInt()){
-            query2.addBindValue(":`card_id`", query1.value(1).toString());
-            query2.addBindValue(":`slave_id`", query1.value(0).toString());
-            query2.addBindValue(":`speed`", 0);
-            query2.addBindValue(":`target_temp`", query1.value(2).toInt());
-            query2.addBindValue(":`cur_temp`", query1.value(3).toInt());
+            query2.bindValue(":`card_id`", query1.value(1).toString());
+            query2.bindValue(":`slave_id`", query1.value(0).toString());
+            query2.bindValue(":`speed`", 0);
+            query2.bindValue(":`target_temp`", query1.value(2).toInt());
+            query2.bindValue(":`cur_temp`", query1.value(3).toInt());
             query2.exec();
         }
     }
     query1.exec("UPDATE `status` SET `speed` = 0 WHERE `speed > 0`");
     query1.exec("DELETE FROM `request`");
 
-    bool flag = QSqlDatabase::commit();
+    bool flag = db.commit();
     if(flag)
         return true;
     else{
-        qDebug << QSqlDatabase::lastError() << endl;
+        qDebug() << db.lastError() << endl;
 
         if(DEBUG_ALLOW_THROW)
-            throw QSqlDatabase::lastError();
+            throw db.lastError();
         else
             assert(false);
 
@@ -81,7 +82,7 @@ bool DB_ACCESS::f_master_switch_off() {
 vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
     vector<int> v;
 
-    QSqlDatabase::transaction();
+    db.transaction();
 
     QSqlQuery query1(db);
     QSqlQuery query2(db);
@@ -95,11 +96,11 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
         int temp = query1.value(2).toInt();
         if(MODE_COLD == master_mode){
             if(!( TEMP_COLD_MIN <= temp && temp <= TEMP_COLD_MAX)){
-                query2.addBindValue(":`card_id`", query1.value(1).toString());
-                query2.addBindValue(":`slave_id`", query1.value(0).toString());
-                query2.addBindValue(":`speed`", query1.value(4).toInt());
-                query2.addBindValue(":`target_temp`", TEMP_COLD_DEFAULT);
-                query2.addBindValue(":`cur_temp`", query1.value(3).toInt());
+                query2.bindValue(":`card_id`", query1.value(1).toString());
+                query2.bindValue(":`slave_id`", query1.value(0).toString());
+                query2.bindValue(":`speed`", query1.value(4).toInt());
+                query2.bindValue(":`target_temp`", TEMP_COLD_DEFAULT);
+                query2.bindValue(":`cur_temp`", query1.value(3).toInt());
                 query2.exec();
 
                 query3.exec("UPDATE `status` SET `target_temp` = "
@@ -112,11 +113,11 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
         }
         else if(MODE_HOT == master_mode){
             if(!( TEMP_HOT_MIN <= temp && temp <= TEMP_HOT_MAX)){
-                query2.addBindValue(":`card_id`", query1.value(1).toString());
-                query2.addBindValue(":`slave_id`", query1.value(0).toString());
-                query2.addBindValue(":`speed`", query1.value(4).toInt());
-                query2.addBindValue(":`target_temp`", TEMP_HOT_DEFAULT);
-                query2.addBindValue(":`cur_temp`", query1.value(3).toInt());
+                query2.bindValue(":`card_id`", query1.value(1).toString());
+                query2.bindValue(":`slave_id`", query1.value(0).toString());
+                query2.bindValue(":`speed`", query1.value(4).toInt());
+                query2.bindValue(":`target_temp`", TEMP_HOT_DEFAULT);
+                query2.bindValue(":`cur_temp`", query1.value(3).toInt());
                 query2.exec();
 
                 query3.exec("UPDATE `status` SET `target_temp` = "
@@ -129,15 +130,15 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
         }
     }
 
-    bool flag = QSqlDatabase::commit();
+    bool flag = db.commit();
     if(flag){
         return v;
     }
     else{
-        qDebug << QSqlDatabase::lastError() << endl;
+        qDebug() << db.lastError() << endl;
 
         if(DEBUG_ALLOW_THROW){
-            throw QSqlDatabase::lastError();
+            throw db.lastError();
             return v;
         }
         else
@@ -148,7 +149,7 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
 vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
     vector<Slave_req> v;
 
-    QSqlDatabase::transaction();
+    db.transaction();
 
     QSqlQuery query1_1(db);
     QSqlQuery query1_2(db);
@@ -160,64 +161,64 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
                 "VALUES(:`card_id`, :`slave_id`, :`speed`, :`target_temp`, :`cur_temp`, :`req_time`)"
                 );
     while(query1_1.next()){
-            query1_2.exec("SELECT * FROM `status` WHERE `slave_id = `"
-                        +query1_1.value(1).toString() );
+        query1_2.exec("SELECT * FROM `status` WHERE `slave_id = `"
+                      +query1_1.value(1).toString() );
 
-            int temp_set = query1_1.value(3).toInt();
-            int speed_set = query1_2.value(4).toInt();
+        int temp_set = query1_1.value(3).toInt();
+        int speed_set = query1_2.value(4).toInt();
 
-            if(MODE_COLD == master_mode){
-                if(temp_set > TEMP_COLD_MAX)
-                    temp_set = TEMP_COLD_MAX;
-                else if(temp_set < TEMP_COLD_MIN)
-                    temp_set = TEMP_COLD_MIN;
+        if(MODE_COLD == master_mode){
+            if(temp_set > TEMP_COLD_MAX)
+                temp_set = TEMP_COLD_MAX;
+            else if(temp_set < TEMP_COLD_MIN)
+                temp_set = TEMP_COLD_MIN;
 
-                if(temp_set > query1_2.value(3))
-                    speed_set = 0;
-            }
-            else if(MODE_HOT == master_mode){
-                if(temp_set > TEMP_HOT_MAX)
-                    temp_set = TEMP_HOT_MAX;
-                else if(temp_set < TEMP_HOT_MIN)
-                    temp_set = TEMP_HOT_MIN;
+            if(temp_set > query1_2.value(3).toInt())
+                speed_set = 0;
+        }
+        else if(MODE_HOT == master_mode){
+            if(temp_set > TEMP_HOT_MAX)
+                temp_set = TEMP_HOT_MAX;
+            else if(temp_set < TEMP_HOT_MIN)
+                temp_set = TEMP_HOT_MIN;
 
-                if(temp_set < query1_2.value(3))
-                    speed_set = 0;
-            }
+            if(temp_set < query1_2.value(3).toInt())
+                speed_set = 0;
+        }
 
-            query2.addBindValue(":`target_temp`", temp_set);
-            query2.addBindValue(":`speed`", speed_set);
-            query2.addBindValue(":`card_id`", query1_2.value(1).toString());
-            query2.addBindValue(":`slave_id`", query1_2.value(0).toString());
-            query2.addBindValue(":`cur_temp`", query1_2.value(3).toInt());
-            query2.addBindValue(":`req_time`", query1_1.value(4));
-            query2.exec();
+        query2.bindValue(":`target_temp`", temp_set);
+        query2.bindValue(":`speed`", speed_set);
+        query2.bindValue(":`card_id`", query1_2.value(1).toString());
+        query2.bindValue(":`slave_id`", query1_2.value(0).toString());
+        query2.bindValue(":`cur_temp`", query1_2.value(3).toInt());
+        query2.bindValue(":`req_time`", query1_1.value(4));
+        query2.exec();
 
-            query3.exec("UPDATE `status` SET `target_temp` = "
-                        + QString::number(temp_set)
-                        + " SET `speed` = "
-                        + QString::number(speed_set)
-                        + " WHERE `slave_id` = "
-                        + query1_1.value(1).toString());
+        query3.exec("UPDATE `status` SET `target_temp` = "
+                    + QString::number(temp_set)
+                    + " SET `speed` = "
+                    + QString::number(speed_set)
+                    + " WHERE `slave_id` = "
+                    + query1_1.value(1).toString());
 
-            query3.exec("DELETE FROM `request` WHERE `id` = " + query1_1.value(0).toString());
+        query3.exec("DELETE FROM `request` WHERE `id` = " + query1_1.value(0).toString());
 
-            Slave_req r;
-            r.m_id = query1_1.value(1).toInt();
-            r.m_target_temp = temp_set;
-            r.m_target_wind = speed_set;
-            v.push_back(r);
+        Slave_req r;
+        r.m_id = query1_1.value(1).toInt();
+        r.m_target_temp = temp_set;
+        r.m_target_wind = speed_set;
+        v.push_back(r);
     }
 
-    bool flag = QSqlDatabase::commit();
+    bool flag = db.commit();
     if(flag){
         return v;
     }
     else{
-        qDebug << QSqlDatabase::lastError() << endl;
+        qDebug() << db.lastError() << endl;
 
         if(DEBUG_ALLOW_THROW){
-            throw QSqlDatabase::lastError();
+            throw db.lastError();
             return v;
         }
         else
@@ -229,7 +230,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
 vector< pair<int, int> > DB_ACCESS::f_master_update_status(const vector<Info_Slave> info) {
     vector< pair<int, int> >  v;
 
-    QSqlDatabase::transaction();
+    db.transaction();
 
     QSqlQuery query1(db);
     for(int i = 0; i< info.size(); i++){
@@ -248,14 +249,14 @@ vector< pair<int, int> > DB_ACCESS::f_master_update_status(const vector<Info_Sla
         v.push_back( pair<int, int>(id_i, temp) );
     }
 
-    bool flag = QSqlDatabase::commit();
+    bool flag = db.commit();
     if(flag){
         return v;
     }
     else{
-        qDebug << QSqlDatabase::lastError() <<endl;
+        qDebug() << db.lastError() <<endl;
         if(DEBUG_ALLOW_THROW)
-            throw QSqlDatabase::lastError();
+            throw db.lastError();
         else
             assert(false);
     }
@@ -267,7 +268,7 @@ bool DB_ACCESS::f_master_user_in(int const roomID, const string userID, const in
     query.exec("INSERT INTO `status`(`id`, `card_id`, `target_temp`)"
                "VALUES(:`id`, :`card_id`, :`target_temp`)");
     query.bindValue(":`id`", roomID);
-    query.bindValue(":`card_id`", userID);
+    query.bindValue(":`card_id`",  QString::fromStdString(userID));
     if(MODE_COLD == master_mode)
         query.bindValue(":`target_temp`", TEMP_COLD_DEFAULT);
     else
@@ -291,7 +292,7 @@ bool DB_ACCESS::f_master_user_in(int const roomID, const string userID, const in
 
 bool DB_ACCESS::f_master_user_out(const int roomID) {
 
-    QSqlDatabase::transaction();
+    db.transaction();
 
     QSqlQuery query1(db);
     QSqlQuery query2(db);
@@ -304,24 +305,24 @@ bool DB_ACCESS::f_master_user_out(const int roomID) {
                 "INSERT INTO `log`(`card_id`, `slave_id`, `speed`, `target_temp`, `cur_temp`)"
                 "VALUES(:`card_id`, :`slave_id`, :`speed`, :`target_temp`, :`cur_temp`)"
                 );
-    query2.addBindValue(":`card_id`", query1.value(1).toString());
-    query2.addBindValue(":`slave_id`", query1.value(0).toString());
-    query2.addBindValue(":`speed`", 0);
-    query2.addBindValue(":`target_temp`", query1.value(2).toInt());
-    query2.addBindValue(":`cur_temp`", query1.value(3).toInt());
+    query2.bindValue(":`card_id`", query1.value(1).toString());
+    query2.bindValue(":`slave_id`", query1.value(0).toString());
+    query2.bindValue(":`speed`", 0);
+    query2.bindValue(":`target_temp`", query1.value(2).toInt());
+    query2.bindValue(":`cur_temp`", query1.value(3).toInt());
     query2.exec();
 
     query1.exec("DELETE FROM `status` WHERE `id` = "
-               + QString::number(roomID));
+                + QString::number(roomID));
 
-    bool falg = QSqlDatabase::commit();
+    bool flag = db.commit();
     if(flag){
         return true;
     }
     else{
-        qDebug() << QSqlDatabase::lastError() << endl;
+        qDebug() << db.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
-            throw QSqlDatabase::lastError();
+            throw db.lastError();
             return false;
         }
         else
@@ -333,7 +334,7 @@ bool DB_ACCESS::f_master_user_out(const int roomID) {
 bool DB_ACCESS::f_master_report(R_Month &Report) {
     vector<Log_record> v;
 
-    QSqlDatabase::transaction();
+    db.transaction();
 
     QSqlQuery query(db);
     query.exec("SELECT * FROM `log` ORDER BY `slave_id` ASC, `id` ASC");
@@ -352,12 +353,12 @@ bool DB_ACCESS::f_master_report(R_Month &Report) {
         r.target_temp   = query.value(4).toInt();
         r.cur_temp      = query.value(5).toInt();
         r.res_time      = query.value(7).toDateTime();
-        r.date          = r.res_time.toString("yyyy/MM/dd");
+        r.date          = r.res_time.toString("yyyy/MM/dd").toStdString();
 
         v.push_back(r);
     }
 
-    bool flag = QSqlDatabase::commit();
+    bool flag = db.commit();
 
     if(flag){
         sort(v.begin(), v.end(), compare_log_record);
@@ -370,7 +371,9 @@ bool DB_ACCESS::f_master_report(R_Month &Report) {
         while(i1 != v.size()){// day
             while(v[i1].date == v[i2].date) i2++;
 
-            R_Day day(v[i1].res_time.setTime(QTime()));
+            QDateTime qd =  v[i1].res_time;
+            qd.setTime(QTime());
+            R_Day day(qd);
 
             while(j1 != i2){// room
                 while(v[j1].slave_id == v[j2].slave_id) j2++;
@@ -378,39 +381,41 @@ bool DB_ACCESS::f_master_report(R_Month &Report) {
 
                 R_Room room(v[j1].slave_id);
 
-                for(int i = j1; i < j2; i++){// record
-                    switch (i) {
-                    case j1:
+                int i;
+                for( i = j1; i < j2; i++){// record
+                    if(i==j1){
                         if(v[i].speed != 0){// need to add a record
-                            QDateTime time_t = v[i].res_time.setTime(QTime()); // clear time
+                            QDateTime time_t = v[i].res_time; // clear time
+                            time_t.setTime(QTime());
                             R_Record record(time_t, v[i].res_time, v[i].cur_temp, v[i].cur_temp, v[i].target_temp_pre, v[i].speed_pre);
 
                             room.record_push(record);
                         }
-
-                        break;
-                    default:
+                    }
+                    else{
                         R_Record record(v[i-1].res_time, v[i].res_time, v[i-1].cur_temp, v[i].cur_temp, v[i-1].target_temp, v[i-1].speed);
 
                         room.record_push(record);
 
                         break;
                     }
+
+                    i--;
+                    if(v[i].speed != 0){
+                        QDateTime time_t = v[i].res_time;
+                        time_t.setTime(QTime(23, 59, 59));
+                        R_Record record(v[i].res_time, time_t, v[i].cur_temp, v[i].cur_temp, v[i].target_temp, v[i].speed);
+
+                        room.record_push(record);
+                    }
+
+                    day.record_push(room);
+                    j1 = j2;
                 }
-                i--;
-                if(v[i].speed != 0){
-                    QDateTime time_t = v[i].res_time.setTime(QTime(23, 59, 59));
-                    R_Record record(v[i].res_time, time_t, v[i].cur_temp, v[i].cur_temp, v[i].target_temp, v[i].speed);
 
-                    room.record_push(record);
-                }
-
-                day.record_push(room);
-                j1 = j2;
-            }
-
-            v_day.push_back(day);
-            i1 = i2;
+                v_day.push_back(day);
+                i1 = i2;
+            }//
         }
 
         int c = 0;
@@ -459,7 +464,7 @@ bool DB_ACCESS::f_slave_login(const int roomID, const string userID) {
             return false;
     }
     else{
-        qDebug << query.lastError() << endl;
+        qDebug() << query.lastError() << endl;
         if(DEBUG_ALLOW_THROW)
             throw query.lastError();
         else
@@ -468,7 +473,7 @@ bool DB_ACCESS::f_slave_login(const int roomID, const string userID) {
 }
 
 Slave_req DB_ACCESS::f_slave_status_update(const int roomID, const double temp_now) {
-    QSqlDatabase::transaction();
+    db.transaction();
 
     QSqlQuery query1(db);
     query1.exec("UPDATE `status` SET `cur_temp` = "
@@ -485,14 +490,14 @@ Slave_req DB_ACCESS::f_slave_status_update(const int roomID, const double temp_n
     req.m_target_temp = query1.value(2).toInt();
     req.m_target_wind = query1.value(4).toInt();
 
-    bool falg = QSqlDatabase::commit();
+    bool flag = db.commit();
     if(flag){
         return req;
     }
     else{
-        qDebug << QSqlDatabase::lastError() <<Endl;
+        qDebug() << db.lastError() << endl;
         if(DEBUG_ALLOW_THROW)
-            throw QSqlDatabase::lastError();
+            throw db.lastError();
         else
             assert(false);
     }
@@ -523,7 +528,7 @@ DB_ACCESS::DB_ACCESS() {
     db.setDatabaseName(DB_DATABASE_NAME);
 
     if(!db.open()){
-        qDebug << db.lastError() << endl;
+        qDebug() << db.lastError() << endl;
         if(DEBUG_ALLOW_THROW)
             throw db.lastError();
         else
@@ -533,7 +538,7 @@ DB_ACCESS::DB_ACCESS() {
 
 DB_ACCESS::DB_ACCESS(DB_ACCESS &object){
     // this is not allowed
-    qDebug << "Error! The use of copy constructor from a singleton!" << endl;
+    qDebug() << "Error! The use of copy constructor from a singleton!" << endl;
     if(DEBUG_ALLOW_THROW)
         throw "Error! The use of copy constructor from a singleton!\n";
     else

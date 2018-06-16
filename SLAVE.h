@@ -4,6 +4,8 @@
 #include "Struct_Define.h"
 #include "DB_ACCESS.h"
 
+//  the only reference of the DB_ACCESS
+extern DB_ACCESS &db_access;
 
 //  -------------------------------------------------------
 //  class   :   SLAVE
@@ -12,7 +14,7 @@
 //  -------------------------------------------------------
 class SLAVE {
 public:
-    SLAVE(string const roomID);
+    SLAVE(int const roomID);
     ~SLAVE();
 
     bool f_Login(string const ID);

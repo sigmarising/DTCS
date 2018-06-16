@@ -8,7 +8,6 @@
 #include "Public_Define.h"
 using namespace std;
 
-
 class R_Record{
 public:
     R_Record(QDateTime time1, QDateTime time2, int temp1, int temp2, int temp_tar, int wind);
@@ -25,7 +24,7 @@ public:
 
 private:
     R_Record();
-    R_Record(R_Record &R);
+    //R_Record(R_Record &R);
 
     QDateTime   Time_Start;
     QDateTime   Time_End;
@@ -53,7 +52,7 @@ public:
     vector<R_Record> v_Record;
 private:
     R_Room();
-    R_Room(R_Room &R);
+    //R_Room(R_Room &R);
 
     int     RoomID;
     int     Switch_Times;
@@ -76,7 +75,7 @@ public:
     vector<R_Room> v_Room;
 private:
     R_Day();
-    R_Day(R_Day &R);
+    //R_Day(R_Day &R);
 
     QDateTime   Day;
     double      Energy;
@@ -99,7 +98,7 @@ public:
     vector<R_Day> v_Day;
 private:
     R_Week();
-    R_Week(R_Week &R);
+    //R_Week(R_Week &R);
 
     QDateTime   Day_Start;
     QDateTime   Day_End;
@@ -114,13 +113,14 @@ public:
     ~R_Month();
 
     void        record_push(R_Week &r);
+    void        record_clear();
     double      get_Energy();
     double      get_Amount();
 
     // don't direct push
     vector<R_Week> v_Week;
 private:
-    R_Month(R_Month &R);
+    //R_Month(R_Month &R);
 
     double      Energy;
     double      Amount;

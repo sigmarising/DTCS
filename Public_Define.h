@@ -3,8 +3,7 @@
 #include "DB_ACCESS.h"
 
 
-//  the only reference of the DB_ACCESS
-extern DB_ACCESS &db_access;
+
 
 //  season for slave use
 extern int g_season;

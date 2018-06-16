@@ -3,21 +3,13 @@
 
 R_Record::R_Record()
 {
-    qDebug << "Don't use this" << endl;
+    qDebug() << "Don't use this" << endl;
     if(DEBUG_ALLOW_THROW)
         throw "Don't use this";
     else
         assert(false);
 }
 
-R_Record::R_Record(R_Record &R)
-{
-    qDebug << "Don't use this" << endl;
-    if(DEBUG_ALLOW_THROW)
-        throw "Don't use this";
-    else
-        assert(false);
-}
 
 R_Record::R_Record(QDateTime time1, QDateTime time2, int temp1, int temp2, int temp_tar, int wind) {
     Time_Start  = time1;
@@ -96,21 +88,13 @@ double R_Record::get_Amount()
 
 R_Room::R_Room()
 {
-    qDebug << "Don't use this" << endl;
+    qDebug() << "Don't use this" << endl;
     if(DEBUG_ALLOW_THROW)
         throw "Don't use this";
     else
         assert(false);
 }
 
-R_Room::R_Room(R_Room &R)
-{
-    qDebug << "Don't use this" << endl;
-    if(DEBUG_ALLOW_THROW)
-        throw "Don't use this";
-    else
-        assert(false);
-}
 
 R_Room::R_Room(int roomid)
 {
@@ -161,16 +145,7 @@ double R_Room::get_Amount()
 
 R_Day::R_Day()
 {
-    qDebug << "Don't use this" << endl;
-    if(DEBUG_ALLOW_THROW)
-        throw "Don't use this";
-    else
-        assert(false);
-}
-
-R_Day::R_Day(R_Day &R)
-{
-    qDebug << "Don't use this" << endl;
+    qDebug() << "Don't use this" << endl;
     if(DEBUG_ALLOW_THROW)
         throw "Don't use this";
     else
@@ -216,21 +191,13 @@ double R_Day::get_Amount()
 
 R_Week::R_Week()
 {
-    qDebug << "Don't use this" << endl;
+    qDebug() << "Don't use this" << endl;
     if(DEBUG_ALLOW_THROW)
         throw "Don't use this";
     else
         assert(false);
 }
 
-R_Week::R_Week(R_Week &R)
-{
-    qDebug << "Don't use this" << endl;
-    if(DEBUG_ALLOW_THROW)
-        throw "Don't use this";
-    else
-        assert(false);
-}
 
 R_Week::R_Week(QDateTime day1, QDateTime day2)
 {
@@ -283,14 +250,6 @@ R_Month::R_Month()
     Amount = 0;
 }
 
-R_Month::R_Month(R_Month &R)
-{
-    qDebug << "Don't use this" << endl;
-    if(DEBUG_ALLOW_THROW)
-        throw "Don't use this";
-    else
-        assert(false);
-}
 
 R_Month::~R_Month()
 {

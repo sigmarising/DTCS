@@ -14,5 +14,8 @@ int main(int argc, char *argv[]) {
     NoUse w;
     w.show();
 
+    MASTER d;
+    SLAVE s(1);
+
     return a.exec();
 }

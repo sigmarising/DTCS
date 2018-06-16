@@ -8,6 +8,9 @@
 using namespace std;
 
 
+//  the only reference of the DB_ACCESS
+extern DB_ACCESS &db_access;
+
 //  -------------------------------------------------------
 //  class   :   MASTER
 //  usage   :   define all the master need
@@ -33,7 +36,7 @@ public:
     int f_get_mode();
     int f_get_frequent();
 
-    R_Month                 Report;
+    R_Month                 m_Report;
     vector<Info_Slave>      m_miniDB;           //  mini database to store the info now
 
 private:

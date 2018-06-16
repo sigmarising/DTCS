@@ -6,11 +6,11 @@ MASTER::MASTER() {
     m_Admin_Key         = ADMIN_KEY;
     m_switch            = SWITCH_OFF;
     m_mode              = MODE_DEFAULT;
-    m_update_frequent   = FREQUENT_MASTER_DEFAULT;
+    m_frequent_ms       = FREQUENT_MASTER_DEFAULT;
 }
 
 MASTER::MASTER(MASTER &object) {
-    qDebug << "Copy of Class MASTER is not allowed!\n";
+    qDebug() << "Copy of Class MASTER is not allowed!\n";
 
     if(DEBUG_ALLOW_THROW)
         throw "Copy of Class MASTER is not allowed!\n";
@@ -65,9 +65,9 @@ bool MASTER::f_set_mode(const int target_mode) {
             for(int j = 0; j < m_miniDB.size(); j++)
                 if(m_miniDB[j].m_id == v[i]){
                     if(MODE_COLD == m_mode)
-                        it->m_temp_target = TEMP_COLD_DEFAULT;
+                        m_miniDB[j].m_temp_target = TEMP_COLD_DEFAULT;
                     else
-                        it->m_temp_target = TEMP_HOT_DEFAULT;
+                        m_miniDB[j].m_temp_target = TEMP_HOT_DEFAULT;
 
                     break;
                 }
@@ -82,7 +82,7 @@ bool MASTER::f_set_mode(const int target_mode) {
 }
 
 bool MASTER::f_set_frequent_ms(const int ms) {
-    m_frequent_ms = ms;
+    return m_frequent_ms = ms;
 }
 
 bool MASTER::f_request_handle() {
@@ -181,6 +181,7 @@ bool MASTER::f_money_calculate(const double delta_ms_time) {
             break;
         }
     }
+    return true;
 }
 
 bool MASTER::f_report() {

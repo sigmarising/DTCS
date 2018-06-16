@@ -1,13 +1,15 @@
 ﻿#pragma once
 
+#include <cassert>
 #include <QtSql>
 #include <QDebug>
-#include <cassert>
 #include "Public_Define.h"
 #include "Struct_Define.h"
 #include "Report.h"
 using namespace std;
 
+class DB_ACCESS;
+class R_Month;
 
 //  -------------------------------------------------------
 //  class   :   DB_ACCESS

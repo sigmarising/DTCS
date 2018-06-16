@@ -1,14 +1,14 @@
 ﻿#include "SLAVE.h"
 
 SLAVE::SLAVE() {
-    qDebug << "Class SLAVE's default constructor isn't allowed to use!\n";
+    qDebug() << "Class SLAVE's default constructor isn't allowed to use!\n";
     if (DEBUG_ALLOW_THROW)
         throw "Class SLAVE's default constructor isn't allowed to use!\n";
     else
         assert(false);
 }
 
-SLAVE::SLAVE(const string roomID) {
+SLAVE::SLAVE(int const roomID) {
     m_roomID = roomID;
     m_Wind = WIND_CLOSE;
     m_Wind_remember = WIND_CLOSE;
@@ -23,7 +23,7 @@ SLAVE::SLAVE(const string roomID) {
 }
 
 SLAVE::SLAVE(SLAVE &object) {
-    qDebug << "Copy of class SLAVE isn't allowed!\n";
+    qDebug() << "Copy of class SLAVE isn't allowed!\n";
     if(DEBUG_ALLOW_THROW)
         throw "Copy of class SLAVE isn't allowed!\n";
     else
@@ -112,6 +112,7 @@ bool SLAVE::f_check_and_auto_adjust() {
         m_auto_adjust = false;
         return f_switch_on();
     }
+    return true;
 }
 
 bool SLAVE::f_tempnow_progress(const int delta_ms) {
