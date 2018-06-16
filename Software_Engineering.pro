@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -25,10 +26,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        nouse.cpp
+        nouse.cpp \
+    DB_ACCESS.cpp \
+    MASTER.cpp \
+    SLAVE.cpp \
+    Public_Define.cpp \
+    Report.cpp
 
 HEADERS += \
-        nouse.h
+        nouse.h \
+    DB_ACCESS.h \
+    MASTER.h \
+    SLAVE.h \
+    Public_Define.h \
+    Struct_Define.h \
+    Report.h
 
 FORMS += \
         nouse.ui
