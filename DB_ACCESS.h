@@ -132,4 +132,4 @@ private:
 
     // Qt Database
     QSqlDatabase db;
-}
+};

@@ -124,5 +124,5 @@ private:
 
     double      Energy;
     double      Amount;
-}
+};
 

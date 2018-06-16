@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <QDateTime>
+#include <string>
+using namespace std;
 
 //  -------------------------------------------------------
 //  struct  :   Info_Slave
