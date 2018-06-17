@@ -64,7 +64,7 @@ bool DB_ACCESS::f_master_switch_off() {
         }
     }
     if ( !query1.exec("UPDATE status SET speed = 0 WHERE speed > 0")){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return false;
@@ -73,7 +73,7 @@ bool DB_ACCESS::f_master_switch_off() {
             assert(false);
     }
     if ( !query1.exec("DELETE FROM request")){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return false;
@@ -97,7 +97,7 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
     QSqlQuery query2(db);
     QSqlQuery query3(db);
     if(!query1.exec("SELECT * FROM status")){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return vector<int>();
@@ -119,7 +119,7 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
                 query2.bindValue(":target_temp", TEMP_COLD_DEFAULT);
                 query2.bindValue(":cur_temp", query1.value(3).toInt());
                 if(!query2.exec()){
-                    qDebug() << db.lastError() << endl;
+                    qDebug() << query2.lastError() << endl;
                     if(DEBUG_ALLOW_THROW){
                         throw db.lastError();
                         return vector<int>();
@@ -132,7 +132,7 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
                                 + QString::number(TEMP_COLD_DEFAULT)
                                 + "WHERE slave_id = "
                                 + query1.value(0).toString())){
-                    qDebug() << db.lastError() << endl;
+                    qDebug() << query3.lastError() << endl;
                     if(DEBUG_ALLOW_THROW){
                         throw db.lastError();
                         return vector<int>();
@@ -152,7 +152,7 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
                 query2.bindValue(":target_temp", TEMP_HOT_DEFAULT);
                 query2.bindValue(":cur_temp", query1.value(3).toInt());
                 if(!query2.exec()){
-                    qDebug() << db.lastError() << endl;
+                    qDebug() << query2.lastError() << endl;
                     if(DEBUG_ALLOW_THROW){
                         throw db.lastError();
                         return vector<int>();
@@ -165,7 +165,7 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
                                 + QString::number(TEMP_HOT_DEFAULT)
                                 + "WHERE slave_id = "
                                 + query1.value(0).toString())){
-                    qDebug() << db.lastError() << endl;
+                    qDebug() << query1.lastError() << endl;
                     if(DEBUG_ALLOW_THROW){
                         throw db.lastError();
                         return vector<int>();
@@ -197,7 +197,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
     QSqlQuery query2(db);
     QSqlQuery query3(db);
     if(!query1_1.exec("SELECT * FROM request LIMIT 3")){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query1_1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return vector<Slave_req>();
@@ -212,7 +212,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
     while(query1_1.next()){
         if(!query1_2.exec("SELECT * FROM status WHERE slave_id = "
                           +query1_1.value(1).toString() )){
-            qDebug() << db.lastError() << endl;
+            qDebug() << query1_2.lastError() << endl;
             if(DEBUG_ALLOW_THROW){
                 throw db.lastError();
                 return vector<Slave_req>();
@@ -250,7 +250,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
         query2.bindValue(":cur_temp", query1_2.value(3).toInt());
         query2.bindValue(":req_time", query1_1.value(4));
         if(!query2.exec()){
-            qDebug() << db.lastError() << endl;
+            qDebug() << query2.lastError() << endl;
             if(DEBUG_ALLOW_THROW){
                 throw db.lastError();
                 return vector<Slave_req>();
@@ -265,7 +265,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
                         + QString::number(speed_set)
                         + " WHERE slave_id = "
                         + query1_1.value(1).toString())){
-            qDebug() << db.lastError() << endl;
+            qDebug() << query3.lastError() << endl;
             if(DEBUG_ALLOW_THROW){
                 throw db.lastError();
                 return vector<Slave_req>();
@@ -275,7 +275,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
         }
 
         if(!query3.exec("DELETE FROM request WHERE id = " + query1_1.value(0).toString())){
-            qDebug() << db.lastError() << endl;
+            qDebug() << query3.lastError() << endl;
             if(DEBUG_ALLOW_THROW){
                 throw db.lastError();
                 return vector<Slave_req>();
@@ -314,7 +314,7 @@ vector< pair<int, int> > DB_ACCESS::f_master_update_status(const vector<Info_Sla
                 + " WHERE id = "
                 + QString::number(info[i].m_id);
         if(!query1.exec(t)){
-            qDebug() << db.lastError() << endl;
+            qDebug() << query1.lastError() << endl;
             if(DEBUG_ALLOW_THROW){
                 throw db.lastError();
                 return vector< pair<int,int> >();
@@ -324,7 +324,7 @@ vector< pair<int, int> > DB_ACCESS::f_master_update_status(const vector<Info_Sla
         }
     }
     if(!query1.exec("SELECT id, cur_temp FROM status")){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return vector<pair<int,int> >();
@@ -390,7 +390,7 @@ bool DB_ACCESS::f_master_user_out(const int roomID) {
     QSqlQuery query2(db);
     if(!query1.exec("SELECT * FROM status WHERE id = "
                     + QString::number(roomID))){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return false;
@@ -411,7 +411,7 @@ bool DB_ACCESS::f_master_user_out(const int roomID) {
     query2.bindValue(":target_temp", query1.value(2).toInt());
     query2.bindValue(":cur_temp", query1.value(3).toInt());
     if(!query2.exec()){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query2.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return false;
@@ -422,7 +422,7 @@ bool DB_ACCESS::f_master_user_out(const int roomID) {
 
     if(!query1.exec("DELETE FROM status WHERE id = "
                     + QString::number(roomID))){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return false;
@@ -444,7 +444,7 @@ bool DB_ACCESS::f_master_report(R_Month &Report) {
 
     QSqlQuery query(db);
     if(!query.exec("SELECT * FROM log ORDER BY slave_id ASC, id ASC")){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return false;
@@ -597,7 +597,7 @@ Slave_req DB_ACCESS::f_slave_status_update(const int roomID, const double temp_n
                     + " WHERE id = "
                     + QString::number(roomID)
                     )){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return Slave_req();
@@ -607,7 +607,7 @@ Slave_req DB_ACCESS::f_slave_status_update(const int roomID, const double temp_n
     }
     if(!query1.exec("SELECT * FROM status WHERE id = "
                     + QString::number(roomID))){
-        qDebug() << db.lastError() << endl;
+        qDebug() << query1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
             return Slave_req();
