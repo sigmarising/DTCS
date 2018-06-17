@@ -2,9 +2,6 @@
 
 #include "DB_ACCESS.h"
 
-
-
-
 //  season for slave use
 extern int g_season;
 
@@ -16,14 +13,15 @@ extern int g_season;
 //      2.  if this option set false
 //          the program will not allow throw
 //          just use the assert
-#define DEBUG_ALLOW_THROW   true
+#define DEBUG_ALLOW_THROW   false
 
 
 //  define for database connect
 #define DB_CONNECT_TYPE     "QMYSQL"
 #define DB_CONNECT_NAME     "DTCS"
-#define DB_HOST_NAME        "api.mywsq.cn"
-#define DB_USER_NAME        "bupt"
+//#define DB_HOST_NAME        "api.mywsq.cn"
+#define DB_HOST_NAME        "10.28.237.13"
+#define DB_USER_NAME        "root"
 #define DB_PASSWORD         "bupt"
 #define DB_DATABASE_NAME    "bupt"
 

@@ -24,7 +24,10 @@ DB_ACCESS &DB_ACCESS::get_Instance() {
 bool DB_ACCESS::f_master_switch_on() {
 
     QSqlQuery query(db);
-    bool flag = query.exec("DELETE FROM `request`");
+    bool flag = query.exec("DELETE FROM request");
+
+    query.finish();
+
     if(flag)
         return true;
     else{
@@ -41,128 +44,182 @@ bool DB_ACCESS::f_master_switch_on() {
 
 bool DB_ACCESS::f_master_switch_off() {
 
-    db.transaction();
+    //db.transaction();
 
     QSqlQuery query1(db);
     QSqlQuery query2(db);
-    query1.exec("SELECT * FROM `status`");
+    query1.exec("SELECT * FROM status");
     query2.prepare(
-                "INSERT INTO `log`(`card_id`, `slave_id`, `speed`, `target_temp`, `cur_temp`)"
-                "VALUES(:`card_id`, :`slave_id`, :`speed`, :`target_temp`, :`cur_temp`)"
+                "INSERT INTO log(card_id, slave_id, speed, target_temp, cur_temp)"
+                "VALUES(:card_id, :slave_id, :speed, :target_temp, :cur_temp)"
                 );
     while (query1.next()) {
         if(0 != query1.value(4).toInt()){
-            query2.bindValue(":`card_id`", query1.value(1).toString());
-            query2.bindValue(":`slave_id`", query1.value(0).toString());
-            query2.bindValue(":`speed`", 0);
-            query2.bindValue(":`target_temp`", query1.value(2).toInt());
-            query2.bindValue(":`cur_temp`", query1.value(3).toInt());
+            query2.bindValue(":card_id", query1.value(1).toString());
+            query2.bindValue(":slave_id", query1.value(0).toString());
+            query2.bindValue(":speed", 0);
+            query2.bindValue(":target_temp", query1.value(2).toInt());
+            query2.bindValue(":cur_temp", query1.value(3).toInt());
             query2.exec();
         }
     }
-    query1.exec("UPDATE `status` SET `speed` = 0 WHERE `speed > 0`");
-    query1.exec("DELETE FROM `request`");
-
-    bool flag = db.commit();
-    if(flag)
-        return true;
-    else{
+    if ( !query1.exec("UPDATE status SET speed = 0 WHERE speed > 0")){
         qDebug() << db.lastError() << endl;
-
-        if(DEBUG_ALLOW_THROW)
+        if(DEBUG_ALLOW_THROW){
             throw db.lastError();
+            return false;
+        }
         else
             assert(false);
-
-        return false;
     }
+    if ( !query1.exec("DELETE FROM request")){
+        qDebug() << db.lastError() << endl;
+        if(DEBUG_ALLOW_THROW){
+            throw db.lastError();
+            return false;
+        }
+        else
+            assert(false);
+    }
+    query1.finish();
+    query2.finish();
 
+    //    bool flag = db.commit();
+    return true;
 }
 
 vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
     vector<int> v;
 
-    db.transaction();
+    //db.transaction();
 
     QSqlQuery query1(db);
     QSqlQuery query2(db);
     QSqlQuery query3(db);
-    query1.exec("SELECT * FROM `status`");
+    if(!query1.exec("SELECT * FROM status")){
+        qDebug() << db.lastError() << endl;
+        if(DEBUG_ALLOW_THROW){
+            throw db.lastError();
+            return vector<int>();
+        }
+        else
+            assert(false);
+    }
     query2.prepare(
-                "INSERT INTO `log`(`card_id`, `slave_id`, `speed`, `target_temp`, `cur_temp`)"
-                "VALUES(:`card_id`, :`slave_id`, :`speed`, :`target_temp`, :`cur_temp`)"
+                "INSERT INTO log(card_id, slave_id, speed, target_temp, cur_temp)"
+                "VALUES(:card_id, :slave_id, :speed, :target_temp, :cur_temp)"
                 );
     while(query1.next()){
         int temp = query1.value(2).toInt();
         if(MODE_COLD == master_mode){
             if(!( TEMP_COLD_MIN <= temp && temp <= TEMP_COLD_MAX)){
-                query2.bindValue(":`card_id`", query1.value(1).toString());
-                query2.bindValue(":`slave_id`", query1.value(0).toString());
-                query2.bindValue(":`speed`", query1.value(4).toInt());
-                query2.bindValue(":`target_temp`", TEMP_COLD_DEFAULT);
-                query2.bindValue(":`cur_temp`", query1.value(3).toInt());
-                query2.exec();
+                query2.bindValue(":card_id", query1.value(1).toString());
+                query2.bindValue(":slave_id", query1.value(0).toString());
+                query2.bindValue(":speed", query1.value(4).toInt());
+                query2.bindValue(":target_temp", TEMP_COLD_DEFAULT);
+                query2.bindValue(":cur_temp", query1.value(3).toInt());
+                if(!query2.exec()){
+                    qDebug() << db.lastError() << endl;
+                    if(DEBUG_ALLOW_THROW){
+                        throw db.lastError();
+                        return vector<int>();
+                    }
+                    else
+                        assert(false);
+                }
 
-                query3.exec("UPDATE `status` SET `target_temp` = "
-                            + QString::number(TEMP_COLD_DEFAULT)
-                            + "WHERE `slave_id` = "
-                            + query1.value(0).toString());
+                if(!query3.exec("UPDATE status SET target_temp = "
+                                + QString::number(TEMP_COLD_DEFAULT)
+                                + "WHERE slave_id = "
+                                + query1.value(0).toString())){
+                    qDebug() << db.lastError() << endl;
+                    if(DEBUG_ALLOW_THROW){
+                        throw db.lastError();
+                        return vector<int>();
+                    }
+                    else
+                        assert(false);
+                }
 
                 v.push_back(query1.value(0).toInt());
             }
         }
         else if(MODE_HOT == master_mode){
             if(!( TEMP_HOT_MIN <= temp && temp <= TEMP_HOT_MAX)){
-                query2.bindValue(":`card_id`", query1.value(1).toString());
-                query2.bindValue(":`slave_id`", query1.value(0).toString());
-                query2.bindValue(":`speed`", query1.value(4).toInt());
-                query2.bindValue(":`target_temp`", TEMP_HOT_DEFAULT);
-                query2.bindValue(":`cur_temp`", query1.value(3).toInt());
-                query2.exec();
+                query2.bindValue(":card_id", query1.value(1).toString());
+                query2.bindValue(":slave_id", query1.value(0).toString());
+                query2.bindValue(":speed", query1.value(4).toInt());
+                query2.bindValue(":target_temp", TEMP_HOT_DEFAULT);
+                query2.bindValue(":cur_temp", query1.value(3).toInt());
+                if(!query2.exec()){
+                    qDebug() << db.lastError() << endl;
+                    if(DEBUG_ALLOW_THROW){
+                        throw db.lastError();
+                        return vector<int>();
+                    }
+                    else
+                        assert(false);
+                }
 
-                query3.exec("UPDATE `status` SET `target_temp` = "
-                            + QString::number(TEMP_HOT_DEFAULT)
-                            + "WHERE `slave_id` = "
-                            + query1.value(0).toString());
+                if(!query3.exec("UPDATE status SET target_temp = "
+                                + QString::number(TEMP_HOT_DEFAULT)
+                                + "WHERE slave_id = "
+                                + query1.value(0).toString())){
+                    qDebug() << db.lastError() << endl;
+                    if(DEBUG_ALLOW_THROW){
+                        throw db.lastError();
+                        return vector<int>();
+                    }
+                    else
+                        assert(false);
+                }
 
                 v.push_back(query1.value(0).toInt());
             }
         }
     }
 
-    bool flag = db.commit();
-    if(flag){
-        return v;
-    }
-    else{
-        qDebug() << db.lastError() << endl;
+    query1.finish();
+    query2.finish();
+    query3.finish();
 
-        if(DEBUG_ALLOW_THROW){
-            throw db.lastError();
-            return v;
-        }
-        else
-            assert(false);
-    }
+    //    bool flag = db.commit();
+    return v;
 }
 
 vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
     vector<Slave_req> v;
 
-    db.transaction();
+    //db.transaction();
 
     QSqlQuery query1_1(db);
     QSqlQuery query1_2(db);
     QSqlQuery query2(db);
     QSqlQuery query3(db);
-    query1_1.exec("SELECT * FROM `request` LIMIT 3");
+    if(!query1_1.exec("SELECT * FROM request LIMIT 3")){
+        qDebug() << db.lastError() << endl;
+        if(DEBUG_ALLOW_THROW){
+            throw db.lastError();
+            return vector<Slave_req>();
+        }
+        else
+            assert(false);
+    }
     query2.prepare(
-                "INSERT INTO `log`(`card_id`, `slave_id`, `speed`, `target_temp`, `cur_temp`, `req_time`)"
-                "VALUES(:`card_id`, :`slave_id`, :`speed`, :`target_temp`, :`cur_temp`, :`req_time`)"
+                "INSERT INTO log(card_id, slave_id, speed, target_temp, cur_temp, req_time)"
+                "VALUES(:card_id, :slave_id, :speed, :target_temp, :cur_temp, :req_time)"
                 );
     while(query1_1.next()){
-        query1_2.exec("SELECT * FROM `status` WHERE `slave_id = `"
-                      +query1_1.value(1).toString() );
+        if(!query1_2.exec("SELECT * FROM status WHERE slave_id = "
+                          +query1_1.value(1).toString() )){
+            qDebug() << db.lastError() << endl;
+            if(DEBUG_ALLOW_THROW){
+                throw db.lastError();
+                return vector<Slave_req>();
+            }
+            else
+                assert(false);
+        }
 
         int temp_set = query1_1.value(3).toInt();
         int speed_set = query1_2.value(4).toInt();
@@ -186,22 +243,46 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
                 speed_set = 0;
         }
 
-        query2.bindValue(":`target_temp`", temp_set);
-        query2.bindValue(":`speed`", speed_set);
-        query2.bindValue(":`card_id`", query1_2.value(1).toString());
-        query2.bindValue(":`slave_id`", query1_2.value(0).toString());
-        query2.bindValue(":`cur_temp`", query1_2.value(3).toInt());
-        query2.bindValue(":`req_time`", query1_1.value(4));
-        query2.exec();
+        query2.bindValue(":target_temp", temp_set);
+        query2.bindValue(":speed", speed_set);
+        query2.bindValue(":card_id", query1_2.value(1).toString());
+        query2.bindValue(":slave_id", query1_2.value(0).toString());
+        query2.bindValue(":cur_temp", query1_2.value(3).toInt());
+        query2.bindValue(":req_time", query1_1.value(4));
+        if(!query2.exec()){
+            qDebug() << db.lastError() << endl;
+            if(DEBUG_ALLOW_THROW){
+                throw db.lastError();
+                return vector<Slave_req>();
+            }
+            else
+                assert(false);
+        }
 
-        query3.exec("UPDATE `status` SET `target_temp` = "
-                    + QString::number(temp_set)
-                    + " SET `speed` = "
-                    + QString::number(speed_set)
-                    + " WHERE `slave_id` = "
-                    + query1_1.value(1).toString());
+        if(!query3.exec("UPDATE status SET target_temp = "
+                        + QString::number(temp_set)
+                        + " SET speed = "
+                        + QString::number(speed_set)
+                        + " WHERE slave_id = "
+                        + query1_1.value(1).toString())){
+            qDebug() << db.lastError() << endl;
+            if(DEBUG_ALLOW_THROW){
+                throw db.lastError();
+                return vector<Slave_req>();
+            }
+            else
+                assert(false);
+        }
 
-        query3.exec("DELETE FROM `request` WHERE `id` = " + query1_1.value(0).toString());
+        if(!query3.exec("DELETE FROM request WHERE id = " + query1_1.value(0).toString())){
+            qDebug() << db.lastError() << endl;
+            if(DEBUG_ALLOW_THROW){
+                throw db.lastError();
+                return vector<Slave_req>();
+            }
+            else
+                assert(false);
+        }
 
         Slave_req r;
         r.m_id = query1_1.value(1).toInt();
@@ -210,38 +291,48 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
         v.push_back(r);
     }
 
-    bool flag = db.commit();
-    if(flag){
-        return v;
-    }
-    else{
-        qDebug() << db.lastError() << endl;
+    query1_1.finish();
+    query1_2.finish();
+    query2.finish();
+    query3.finish();
 
-        if(DEBUG_ALLOW_THROW){
-            throw db.lastError();
-            return v;
-        }
-        else
-            assert(false);
-    }
+    return v;
 
 }
 
 vector< pair<int, int> > DB_ACCESS::f_master_update_status(const vector<Info_Slave> info) {
     vector< pair<int, int> >  v;
 
-    db.transaction();
+    //db.transaction();
 
     QSqlQuery query1(db);
     for(int i = 0; i< info.size(); i++){
-        query1.exec("UPDATE `status` SET `energy` = "
-                    + QString::number(info[i].m_energy)
-                    + " , SET `amount` = "
-                    + QString::number(info[i].m_amount)
-                    + " WHERE `id` = "
-                    + QString::number(info[i].m_id));
+        QString t = "UPDATE status SET energy = "
+                + QString::number(info[i].m_energy)
+                + " , SET amount = "
+                + QString::number(info[i].m_amount)
+                + " WHERE id = "
+                + QString::number(info[i].m_id);
+        if(!query1.exec(t)){
+            qDebug() << db.lastError() << endl;
+            if(DEBUG_ALLOW_THROW){
+                throw db.lastError();
+                return vector< pair<int,int> >();
+            }
+            else
+                assert(false);
+        }
     }
-    query1.exec("SELECT `id`, `cur_temp` FROM `status`");
+    if(!query1.exec("SELECT id, cur_temp FROM status")){
+        qDebug() << db.lastError() << endl;
+        if(DEBUG_ALLOW_THROW){
+            throw db.lastError();
+            return vector<pair<int,int> >();
+        }
+        else
+            assert(false);
+    }
+
     while(query1.next()){
         int id_i = query1.value(0).toInt();
         int temp = query1.value(1).toInt();
@@ -249,42 +340,43 @@ vector< pair<int, int> > DB_ACCESS::f_master_update_status(const vector<Info_Sla
         v.push_back( pair<int, int>(id_i, temp) );
     }
 
-    bool flag = db.commit();
-    if(flag){
-        return v;
-    }
-    else{
-        qDebug() << db.lastError() <<endl;
-        if(DEBUG_ALLOW_THROW)
-            throw db.lastError();
-        else
-            assert(false);
-    }
+    query1.finish();
+
+    //    bool flag = db.commit();
+    return v;
 
 }
 
 bool DB_ACCESS::f_master_user_in(int const roomID, const string userID, const int master_mode) {
     QSqlQuery query(db);
-    query.exec("INSERT INTO `status`(`id`, `card_id`, `target_temp`)"
-               "VALUES(:`id`, :`card_id`, :`target_temp`)");
-    query.bindValue(":`id`", roomID);
-    query.bindValue(":`card_id`",  QString::fromStdString(userID));
+    QSqlQuery query_t(db);
+    query_t.exec("SELECT * FROM status WHERE id = " + QString::number(roomID));
+
+    if(query_t.next()){
+        return false;
+    }
+
+    query.prepare(  "INSERT INTO status(id, card_id, target_temp)"
+                    "VALUES(:id, :card_id, :target_temp)");
+    query.bindValue(":id", roomID);
+    query.bindValue(":card_id",  QString::fromStdString(userID));
     if(MODE_COLD == master_mode)
-        query.bindValue(":`target_temp`", TEMP_COLD_DEFAULT);
+        query.bindValue(":target_temp", TEMP_COLD_DEFAULT);
     else
-        query.bindValue(":`target_temp`", TEMP_HOT_DEFAULT);
+        query.bindValue(":target_temp", TEMP_HOT_DEFAULT);
 
     bool flag = query.exec();
+
+    query.finish();
 
     if(flag){
         return true;
     }
     else{
         qDebug() << query.lastError() << endl;
-        if(DEBUG_ALLOW_THROW){
-            throw query.lastError();
+        if(DEBUG_ALLOW_THROW)
             return false;
-        }
+
         else
             assert(false);
     }
@@ -292,34 +384,33 @@ bool DB_ACCESS::f_master_user_in(int const roomID, const string userID, const in
 
 bool DB_ACCESS::f_master_user_out(const int roomID) {
 
-    db.transaction();
+    //db.transaction();
 
     QSqlQuery query1(db);
     QSqlQuery query2(db);
-    query1.exec("SELECT * FROM `status` WHERE `id` = "
-                + QString::number(roomID));
+    if(!query1.exec("SELECT * FROM status WHERE id = "
+                    + QString::number(roomID))){
+        qDebug() << db.lastError() << endl;
+        if(DEBUG_ALLOW_THROW){
+            throw db.lastError();
+            return false;
+        }
+        else
+            assert(false);
+    }
     if(!query1.next())
         return false;
 
     query2.prepare(
-                "INSERT INTO `log`(`card_id`, `slave_id`, `speed`, `target_temp`, `cur_temp`)"
-                "VALUES(:`card_id`, :`slave_id`, :`speed`, :`target_temp`, :`cur_temp`)"
+                "INSERT INTO log(card_id, slave_id, speed, target_temp, cur_temp)"
+                "VALUES(:card_id, :slave_id, :speed, :target_temp, :cur_temp)"
                 );
-    query2.bindValue(":`card_id`", query1.value(1).toString());
-    query2.bindValue(":`slave_id`", query1.value(0).toString());
-    query2.bindValue(":`speed`", 0);
-    query2.bindValue(":`target_temp`", query1.value(2).toInt());
-    query2.bindValue(":`cur_temp`", query1.value(3).toInt());
-    query2.exec();
-
-    query1.exec("DELETE FROM `status` WHERE `id` = "
-                + QString::number(roomID));
-
-    bool flag = db.commit();
-    if(flag){
-        return true;
-    }
-    else{
+    query2.bindValue(":card_id", query1.value(1).toString());
+    query2.bindValue(":slave_id", query1.value(0).toString());
+    query2.bindValue(":speed", 0);
+    query2.bindValue(":target_temp", query1.value(2).toInt());
+    query2.bindValue(":cur_temp", query1.value(3).toInt());
+    if(!query2.exec()){
         qDebug() << db.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
@@ -329,15 +420,38 @@ bool DB_ACCESS::f_master_user_out(const int roomID) {
             assert(false);
     }
 
+    if(!query1.exec("DELETE FROM status WHERE id = "
+                    + QString::number(roomID))){
+        qDebug() << db.lastError() << endl;
+        if(DEBUG_ALLOW_THROW){
+            throw db.lastError();
+            return false;
+        }
+        else
+            assert(false);
+    }
+
+    query1.finish();
+    query2.finish();
+
+    return true;
 }
 
 bool DB_ACCESS::f_master_report(R_Month &Report) {
     vector<Log_record> v;
 
-    db.transaction();
+    //db.transaction();
 
     QSqlQuery query(db);
-    query.exec("SELECT * FROM `log` ORDER BY `slave_id` ASC, `id` ASC");
+    if(!query.exec("SELECT * FROM log ORDER BY slave_id ASC, id ASC")){
+        qDebug() << db.lastError() << endl;
+        if(DEBUG_ALLOW_THROW){
+            throw db.lastError();
+            return false;
+        }
+        else
+            assert(false);
+    }
     while(query.next()){
         Log_record r;
         r.slave_id      = query.value(2).toInt();
@@ -358,9 +472,11 @@ bool DB_ACCESS::f_master_report(R_Month &Report) {
         v.push_back(r);
     }
 
-    bool flag = db.commit();
+    query.finish();
 
-    if(flag){
+    //    bool flag = db.commit();
+
+    if(true){
         sort(v.begin(), v.end(), compare_log_record);
 
         int i1 = 0, i2 = 0, j1 = 0, j2 = 0;
@@ -454,7 +570,7 @@ bool DB_ACCESS::f_master_report(R_Month &Report) {
 
 bool DB_ACCESS::f_slave_login(const int roomID, const string userID) {
     QSqlQuery query(db);
-    bool flag = query.exec("SELECT `card_id` FROM `status` WHERE `id` = " + QString::number(roomID));
+    bool flag = query.exec("SELECT card_id FROM status WHERE id = " + QString::number(roomID));
 
     if(flag){
         query.next();
@@ -473,16 +589,32 @@ bool DB_ACCESS::f_slave_login(const int roomID, const string userID) {
 }
 
 Slave_req DB_ACCESS::f_slave_status_update(const int roomID, const double temp_now) {
-    db.transaction();
+    //db.transaction();
 
     QSqlQuery query1(db);
-    query1.exec("UPDATE `status` SET `cur_temp` = "
-                + QString::number(round(temp_now))
-                + " WHERE `id` = "
-                + QString::number(roomID)
-                );
-    query1.exec("SELECT * FROM `status` WHERE `id` = "
-                + QString::number(roomID));
+    if(!query1.exec("UPDATE status SET cur_temp = "
+                    + QString::number(round(temp_now))
+                    + " WHERE id = "
+                    + QString::number(roomID)
+                    )){
+        qDebug() << db.lastError() << endl;
+        if(DEBUG_ALLOW_THROW){
+            throw db.lastError();
+            return Slave_req();
+        }
+        else
+            assert(false);
+    }
+    if(!query1.exec("SELECT * FROM status WHERE id = "
+                    + QString::number(roomID))){
+        qDebug() << db.lastError() << endl;
+        if(DEBUG_ALLOW_THROW){
+            throw db.lastError();
+            return Slave_req();
+        }
+        else
+            assert(false);
+    }
     query1.next();
 
     Slave_req req;
@@ -490,29 +622,23 @@ Slave_req DB_ACCESS::f_slave_status_update(const int roomID, const double temp_n
     req.m_target_temp = query1.value(2).toInt();
     req.m_target_wind = query1.value(4).toInt();
 
-    bool flag = db.commit();
-    if(flag){
-        return req;
-    }
-    else{
-        qDebug() << db.lastError() << endl;
-        if(DEBUG_ALLOW_THROW)
-            throw db.lastError();
-        else
-            assert(false);
-    }
+    query1.finish();
 
+    //    bool flag = db.commit();
+    return req;
 }
 
 bool DB_ACCESS::f_slave_request(const Slave_req req) {
     QSqlQuery query(db);
 
-    query.prepare("INSERT INTO `request`(`slave_id`, `speed`, `temp`)"
-                  "VALUES(:`slave_id`, :`speed`, :`temp`)");
-    query.bindValue(":`slave_id`", req.m_id);
-    query.bindValue(":`speed`", req.m_target_wind);
-    query.bindValue(":`temp`)", req.m_target_temp);
+    query.prepare("INSERT INTO request(slave_id, speed, temp)"
+                  "VALUES(:slave_id, :speed, :temp)");
+    query.bindValue(":slave_id", req.m_id);
+    query.bindValue(":speed", req.m_target_wind);
+    query.bindValue(":temp)", req.m_target_temp);
     bool flag = query.exec();
+
+    query.finish();
 
     if(flag)
         return true;
@@ -529,8 +655,9 @@ DB_ACCESS::DB_ACCESS() {
 
     if(!db.open()){
         qDebug() << db.lastError() << endl;
-        if(DEBUG_ALLOW_THROW)
+        if(DEBUG_ALLOW_THROW){
             throw db.lastError();
+        }
         else
             assert(false);
     }
@@ -551,3 +678,4 @@ DB_ACCESS::~DB_ACCESS() {
     // second remove connect
     QSqlDatabase::removeDatabase(DB_CONNECT_NAME);
 }
+

@@ -17,5 +17,11 @@ int main(int argc, char *argv[]) {
     MASTER d;
     SLAVE s(1);
 
+    d.f_user_in(1,"1");
+    s.f_Login("1");
+    s.f_switch_on();
+    d.f_update_slave_status();
+    d.f_request_handle();
+
     return a.exec();
 }
