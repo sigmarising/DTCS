@@ -58,33 +58,28 @@ bool SLAVE::f_switch_on() {
     if(!m_Login_success)
         return false;
 
-
-    if (WIND_CLOSE != m_Wind_remember){
-        if(f_request(m_Wind_remember, m_Temp_Target)){
-            //m_switch = SWITCH_ON;
+    if(SWITCH_ON == m_switch)
+        return true;
+    else
+        if(f_request(WIND_LOW, m_Temp_Target))
             return true;
-        }
         else
             return false;
-    }
-    else{
-        //m_switch = SWITCH_ON;
-        return true;
-    }
 }
 
 bool SLAVE::f_switch_off() {
     if(!m_Login_success)
         return false;
 
-    if(f_request(WIND_CLOSE, m_Temp_Target)){
-        m_Wind_remember = m_Wind;
-        //m_switch = SWITCH_OFF;
+    if(SWITCH_OFF == m_switch)
         return true;
-    }
-    else{
-        return false;
-    }
+    else
+        if(f_request(WIND_CLOSE, m_Temp_Target)){
+            return true;
+        }
+        else{
+            return false;
+        }
 
 }
 
