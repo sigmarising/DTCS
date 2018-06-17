@@ -67,14 +67,18 @@ bool SLAVE::f_switch_on() {
         return true;
     else
         if(WIND_CLOSE == m_Wind_remember){
-            if(f_request(WIND_LOW, m_Temp_Target))
+            if(f_request(WIND_LOW, m_Temp_Target)){
+                m_switch = SWITCH_ON;
                 return true;
+            }
             else
                 return false;
         }
         else{
-            if(f_request(m_Wind_remember, m_Temp_Target))
+            if(f_request(m_Wind_remember, m_Temp_Target)){
+                m_switch = SWITCH_ON;
                 return true;
+            }
             else
                 return false;
         }
@@ -89,6 +93,7 @@ bool SLAVE::f_switch_off() {
     else{
         m_Wind_remember = m_Wind;
         if(f_request(WIND_CLOSE, m_Temp_Target)){
+            m_switch = SWITCH_OFF;
             return true;
         }
         else{
@@ -107,10 +112,10 @@ bool SLAVE::f_status_update() {
         m_Wind = r.m_wind_speed;
         m_Temp_Target = r.m_temp_target;
 
-        if(WIND_CLOSE ==  m_Wind)
-            m_switch = SWITCH_OFF;
-        else
-            m_switch = SWITCH_ON;
+//        if(WIND_CLOSE ==  m_Wind)
+//            m_switch = SWITCH_OFF;
+//        else
+//            m_switch = SWITCH_ON;
 
         m_Amount = r.m_amount;
         m_Energy = r.m_energy;
@@ -130,11 +135,12 @@ bool SLAVE::f_check_and_auto_adjust() {
 
     if(delta < 0.1){
         m_auto_adjust = true;
-        return f_switch_off();
+        m_Wind_remember = m_Wind;
+        return f_request(WIND_CLOSE, m_Temp_Target);
     }
     else if (delta > 1.0 && m_auto_adjust){
         m_auto_adjust = false;
-        return f_switch_on();
+        return f_request(m_Wind_remember, m_Temp_Target);
     }
     return true;
 }
@@ -174,6 +180,10 @@ bool SLAVE::f_tempnow_progress(const int delta_ms) {
         }
 
     }
+    else if(m_Temp_Now <= PROGRESS_MIN)
+        m_Temp_Now += 0.01;
+    else if (m_Temp_Now >= PROGRESS_MAX)
+        m_Temp_Now -= 0.01;
 
     return true;
 }
@@ -181,6 +191,8 @@ bool SLAVE::f_tempnow_progress(const int delta_ms) {
 bool SLAVE::f_adjust_temp(const int t_temp) {
     if(!m_Login_success)
         return false;
+//    else if(m_auto_adjust)
+//        return true;
 
     return f_request(m_Wind, t_temp);
 }
@@ -188,6 +200,8 @@ bool SLAVE::f_adjust_temp(const int t_temp) {
 bool SLAVE::f_adjust_wind(const int t_wind) {
     if(!m_Login_success)
         return false;
+    else if(m_auto_adjust)
+        return true;
 
     int i = 0;
     if(t_wind <= 1)
