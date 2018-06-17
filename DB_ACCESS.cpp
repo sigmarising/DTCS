@@ -39,7 +39,7 @@ vector<Info_Slave> DB_ACCESS::f_master_init() {
         i.m_id = query.value(0).toInt();
         i.m_temp_target = query.value(2).toInt();
         i.m_temp_now = query.value(3).toInt();
-        i.m_wind_speed = query.value(4);
+        i.m_wind_speed = query.value(4).toInt();
         i.m_energy = query.value(5).toDouble();
         i.m_amount = query.value(6).toDouble();
 
