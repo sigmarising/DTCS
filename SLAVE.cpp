@@ -66,22 +66,12 @@ bool SLAVE::f_switch_on() {
     if(SWITCH_ON == m_switch)
         return true;
     else
-        if(WIND_CLOSE == m_Wind_remember){
-            if(f_request(WIND_LOW, m_Temp_Target)){
-                m_switch = SWITCH_ON;
-                return true;
-            }
-            else
-                return false;
+        if(f_request(WIND_LOW, m_Temp_Target)){
+            m_switch = SWITCH_ON;
+            return true;
         }
-        else{
-            if(f_request(m_Wind_remember, m_Temp_Target)){
-                m_switch = SWITCH_ON;
-                return true;
-            }
-            else
-                return false;
-        }
+        else
+            return false;
 }
 
 bool SLAVE::f_switch_off() {
@@ -91,7 +81,6 @@ bool SLAVE::f_switch_off() {
     if(SWITCH_OFF == m_switch)
         return true;
     else{
-        m_Wind_remember = m_Wind;
         if(f_request(WIND_CLOSE, m_Temp_Target)){
             m_switch = SWITCH_OFF;
             return true;
@@ -134,8 +123,9 @@ bool SLAVE::f_check_and_auto_adjust() {
     double delta = fabs(double(m_Temp_Target) - m_Temp_Now);
 
     if(delta < 0.1){
+        if(!m_auto_adjust)
+            m_Wind_remember = m_Wind;
         m_auto_adjust = true;
-        m_Wind_remember = m_Wind;
         return f_request(WIND_CLOSE, m_Temp_Target);
     }
     else if (delta > 1.0 && m_auto_adjust){
