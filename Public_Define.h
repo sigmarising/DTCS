@@ -68,18 +68,18 @@ extern int g_season;
 //  define for enegry amount rate
 //  count by ms
 #define ENERGY_WIND_LOW         double(0.8/60000)
-#define ENERGY_WIND_MEDIUM      double(1/60000)
+#define ENERGY_WIND_MEDIUM      double(1.0/60000)
 #define ENERGY_WIND_HIGH        double(1.3/60000)
-#define ENERGY_AMOUNT_RATE      double(5)
+#define ENERGY_AMOUNT_RATE      double(5.0)
 
 
 //  define for temp progress
 //  count by ms
-#define PROGRESS_NATURE_SUMMER  double(1 /10000)
-#define PROGRESS_NATURE_WINTER  double(-1/10000)
-#define PROGRESS_WIND_1         double(1 /12500)
-#define PROGRESS_WIND_2         double(1 /10000)
-#define PROGRESS_WIND_3         double(1 / 7500)
+#define PROGRESS_NATURE_SUMMER  double(1.0 /10000)
+#define PROGRESS_NATURE_WINTER  double(-1.0/10000)
+#define PROGRESS_WIND_1         double(1.0 /12500)
+#define PROGRESS_WIND_2         double(1.0 /10000)
+#define PROGRESS_WIND_3         double(1.0 / 7500)
 
 
 // define for temp progress max min

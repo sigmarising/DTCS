@@ -32,6 +32,9 @@ public:
     int     f_get_switch();
     int     f_get_temp_target();
     double  f_get_temp_now();
+    double  f_get_Energy();
+    double  f_get_Amount();
+
 
 
 private:
@@ -51,5 +54,8 @@ private:
     int     m_Wind;
     int     m_Temp_Target;
     double  m_Temp_Now;
+
+    double  m_Energy;
+    double  m_Amount;
 
 };

@@ -21,12 +21,17 @@ SLAVE::SLAVE(int const roomID) {
     m_Login_success = false;
     m_auto_adjust = false;
 
+    m_Amount = 0;
+    m_Energy = 0;
+
     Info_Slave i = db_access.f_slave_init(roomID);
 
     if(i.m_id == 123){
         m_Wind = i.m_wind_speed;
         m_Temp_Now = i.m_temp_now;
         m_Temp_Target = i.m_temp_target;
+        m_Energy = i.m_energy;
+        m_Amount = i.m_amount;
     }
 }
 
@@ -61,10 +66,18 @@ bool SLAVE::f_switch_on() {
     if(SWITCH_ON == m_switch)
         return true;
     else
-        if(f_request(WIND_LOW, m_Temp_Target))
-            return true;
-        else
-            return false;
+        if(WIND_CLOSE == m_Wind_remember){
+            if(f_request(WIND_LOW, m_Temp_Target))
+                return true;
+            else
+                return false;
+        }
+        else{
+            if(f_request(m_Wind_remember, m_Temp_Target))
+                return true;
+            else
+                return false;
+        }
 }
 
 bool SLAVE::f_switch_off() {
@@ -73,14 +86,15 @@ bool SLAVE::f_switch_off() {
 
     if(SWITCH_OFF == m_switch)
         return true;
-    else
+    else{
+        m_Wind_remember = m_Wind;
         if(f_request(WIND_CLOSE, m_Temp_Target)){
             return true;
         }
         else{
             return false;
         }
-
+    }
 }
 
 bool SLAVE::f_status_update() {
@@ -88,15 +102,18 @@ bool SLAVE::f_status_update() {
         return false;
 
     try{
-        Slave_req r = db_access.f_slave_status_update(m_roomID, m_Temp_Now);
+        Info_Slave r = db_access.f_slave_status_update(m_roomID, m_Temp_Now);
 
-        m_Wind = r.m_target_wind;
-        m_Temp_Target = r.m_target_temp;
+        m_Wind = r.m_wind_speed;
+        m_Temp_Target = r.m_temp_target;
 
         if(WIND_CLOSE ==  m_Wind)
             m_switch = SWITCH_OFF;
         else
             m_switch = SWITCH_ON;
+
+        m_Amount = r.m_amount;
+        m_Energy = r.m_energy;
 
         return true;
     }
@@ -172,7 +189,15 @@ bool SLAVE::f_adjust_wind(const int t_wind) {
     if(!m_Login_success)
         return false;
 
-    return f_request(t_wind, m_Temp_Target);
+    int i = 0;
+    if(t_wind <= 1)
+        i = 1;
+    else if (t_wind >= 3)
+        i = 3;
+    else
+        i = t_wind;
+
+    return f_request(i, m_Temp_Target);
 
 }
 
@@ -198,6 +223,16 @@ int SLAVE::f_get_temp_target() {
 
 double SLAVE::f_get_temp_now() {
     return m_Temp_Now;
+}
+
+double SLAVE::f_get_Energy()
+{
+    return m_Energy;
+}
+
+double SLAVE::f_get_Amount()
+{
+    return m_Amount;
 }
 
 bool SLAVE::f_request(const int wind, const int temp) {

@@ -238,8 +238,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
                 "VALUES(:card_id, :slave_id, :speed, :target_temp, :cur_temp, :req_time)"
                 );
     while(query1_1.next()){
-        if(!query1_2.exec("SELECT * FROM status WHERE `id` = "
-                          +query1_1.value(1).toString() )){
+        if(!query1_2.exec("SELECT * FROM status WHERE `id` = " + query1_1.value(1).toString() )){
             qDebug() << query1_2.lastError() << endl;
             if(DEBUG_ALLOW_THROW){
                 throw db.lastError();
@@ -249,6 +248,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
                 assert(false);
         }
 
+        query1_2.next();
         int speed_set = query1_1.value(2).toInt();
         int temp_set = query1_1.value(3).toInt();
 
@@ -276,7 +276,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
         query2.bindValue(":speed", speed_set);
         query2.bindValue(":target_temp", temp_set);
         query2.bindValue(":cur_temp", query1_2.value(3).toInt());
-        query2.bindValue(":req_time", query1_1.value(4));
+        query2.bindValue(":req_time", query1_1.value(4).toDateTime());
         if(!query2.exec()){
             qDebug() << query2.lastError() << endl;
             if(DEBUG_ALLOW_THROW){
@@ -622,6 +622,8 @@ Info_Slave DB_ACCESS::f_slave_init(const int roomID)
     i.m_wind_speed = query.value(4).toInt();
     i.m_temp_now = query.value(3).toInt();
     i.m_temp_target = query.value(2).toInt();
+    i.m_energy = query.value(5).toDouble();
+    i.m_amount = query.value(6).toDouble();
 
     return i;
 }
@@ -646,7 +648,7 @@ bool DB_ACCESS::f_slave_login(const int roomID, const string userID) {
     }
 }
 
-Slave_req DB_ACCESS::f_slave_status_update(const int roomID, const double temp_now) {
+Info_Slave DB_ACCESS::f_slave_status_update(const int roomID, const double temp_now) {
     //db.transaction();
 
     QSqlQuery query1(db);
@@ -658,39 +660,41 @@ Slave_req DB_ACCESS::f_slave_status_update(const int roomID, const double temp_n
         qDebug() << query1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
-            return Slave_req();
+            return Info_Slave();
         }
         else
             assert(false);
     }
-    if(!query1.exec("SELECT * FROM status WHERE id = "
+    if(!query1.exec("SELECT * FROM status WHERE `id` = "
                     + QString::number(roomID))){
         qDebug() << query1.lastError() << endl;
         if(DEBUG_ALLOW_THROW){
             throw db.lastError();
-            return Slave_req();
+            return Info_Slave();
         }
         else
             assert(false);
     }
     query1.next();
 
-    Slave_req req;
-    req.m_id = roomID;
-    req.m_target_temp = query1.value(2).toInt();
-    req.m_target_wind = query1.value(4).toInt();
+    Info_Slave info;
+    info.m_id = roomID;
+    info.m_temp_target = query1.value(2).toInt();
+    info.m_wind_speed = query1.value(4).toInt();
+    info.m_amount = query1.value(6).toDouble();
+    info.m_energy = query1.value(5).toDouble();
 
-    query1.finish();
 
     //    bool flag = db.commit();
-    return req;
+    return info;
 }
 
 bool DB_ACCESS::f_slave_request(const Slave_req req) {
     QSqlQuery query(db);
 
-    query.prepare("INSERT INTO request(slave_id, speed, temp)"
-                  "VALUES(:slave_id, :speed, :temp)");
+    query.prepare(
+                "INSERT INTO request(slave_id, speed, temp)"
+                "VALUES(:slave_id, :speed, :temp)");
     query.bindValue(":slave_id", req.m_id);
     query.bindValue(":speed", req.m_target_wind);
     query.bindValue(":temp", req.m_target_temp);

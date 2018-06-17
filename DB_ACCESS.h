@@ -113,7 +113,7 @@ public:
     //      roomid temp_now
     //  return:
     //      salve status
-    Slave_req f_slave_status_update(int const roomID, double const temp_now);
+    Info_Slave f_slave_status_update(int const roomID, double const temp_now);
     //  func: f_slave_request
     //      slave use for request
     //  parameter:
