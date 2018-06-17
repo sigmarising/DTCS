@@ -249,8 +249,8 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
                 assert(false);
         }
 
+        int speed_set = query1_1.value(2).toInt();
         int temp_set = query1_1.value(3).toInt();
-        int speed_set = query1_2.value(4).toInt();
 
         if(MODE_COLD == master_mode){
             if(temp_set > TEMP_COLD_MAX)
@@ -271,10 +271,10 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
                 speed_set = 0;
         }
 
-        query2.bindValue(":target_temp", temp_set);
-        query2.bindValue(":speed", speed_set);
         query2.bindValue(":card_id", query1_2.value(1).toString());
-        query2.bindValue(":slave_id", query1_2.value(0).toString());
+        query2.bindValue(":slave_id", query1_2.value(0).toInt());
+        query2.bindValue(":speed", speed_set);
+        query2.bindValue(":target_temp", temp_set);
         query2.bindValue(":cur_temp", query1_2.value(3).toInt());
         query2.bindValue(":req_time", query1_1.value(4));
         if(!query2.exec()){
@@ -289,9 +289,9 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
 
         if(!query3.exec("UPDATE status SET target_temp = "
                         + QString::number(temp_set)
-                        + " SET speed = "
+                        + " , speed = "
                         + QString::number(speed_set)
-                        + " WHERE slave_id = "
+                        + " WHERE `id` = "
                         + query1_1.value(1).toString())){
             qDebug() << query3.lastError() << endl;
             if(DEBUG_ALLOW_THROW){
@@ -302,7 +302,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
                 assert(false);
         }
 
-        if(!query3.exec("DELETE FROM request WHERE id = " + query1_1.value(0).toString())){
+        if(!query3.exec("DELETE FROM request WHERE `id` = " + query1_1.value(0).toString())){
             qDebug() << query3.lastError() << endl;
             if(DEBUG_ALLOW_THROW){
                 throw db.lastError();
@@ -699,7 +699,7 @@ bool DB_ACCESS::f_slave_request(const Slave_req req) {
     if(flag)
         return true;
     else{
-        qDebug << query.lastError() << endl;
+        qDebug() << query.lastError() << endl;
         return false;
     }
 }
