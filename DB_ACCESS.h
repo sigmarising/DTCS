@@ -97,6 +97,9 @@ public:
     bool f_master_report(R_Month &Report);
 
 
+    //  func: f_slave_init
+    //      for slave use to inti the status
+    Info_Slave f_slave_init(int const roomID);
     //  func: f_slave_login
     //      slave use for login
     //  parameter:

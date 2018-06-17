@@ -20,6 +20,14 @@ SLAVE::SLAVE(int const roomID) {
     m_Temp_Target = 25;
     m_Login_success = false;
     m_auto_adjust = false;
+
+    Info_Slave i = db_access.f_slave_init(roomID);
+
+    if(i.m_id == 123){
+        m_Wind = i.m_wind_speed;
+        m_Temp_Now = i.m_temp_now;
+        m_Temp_Target = i.m_temp_target;
+    }
 }
 
 SLAVE::SLAVE(SLAVE &object) {
@@ -53,14 +61,14 @@ bool SLAVE::f_switch_on() {
 
     if (WIND_CLOSE != m_Wind_remember){
         if(f_request(m_Wind_remember, m_Temp_Target)){
-            m_switch = SWITCH_ON;
+            //m_switch = SWITCH_ON;
             return true;
         }
         else
             return false;
     }
     else{
-        m_switch = SWITCH_ON;
+        //m_switch = SWITCH_ON;
         return true;
     }
 }
@@ -69,10 +77,9 @@ bool SLAVE::f_switch_off() {
     if(!m_Login_success)
         return false;
 
-
     if(f_request(WIND_CLOSE, m_Temp_Target)){
         m_Wind_remember = m_Wind;
-        m_switch = SWITCH_OFF;
+        //m_switch = SWITCH_OFF;
         return true;
     }
     else{
@@ -90,6 +97,11 @@ bool SLAVE::f_status_update() {
 
         m_Wind = r.m_target_wind;
         m_Temp_Target = r.m_target_temp;
+
+        if(WIND_CLOSE ==  m_Wind)
+            m_switch = SWITCH_OFF;
+        else
+            m_switch = SWITCH_ON;
 
         return true;
     }

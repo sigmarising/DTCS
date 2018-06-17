@@ -238,7 +238,7 @@ vector<Slave_req> DB_ACCESS::f_master_request_handle(int master_mode) {
                 "VALUES(:card_id, :slave_id, :speed, :target_temp, :cur_temp, :req_time)"
                 );
     while(query1_1.next()){
-        if(!query1_2.exec("SELECT * FROM status WHERE slave_id = "
+        if(!query1_2.exec("SELECT * FROM status WHERE `id` = "
                           +query1_1.value(1).toString() )){
             qDebug() << query1_2.lastError() << endl;
             if(DEBUG_ALLOW_THROW){
@@ -596,6 +596,36 @@ bool DB_ACCESS::f_master_report(R_Month &Report) {
     }
 }
 
+Info_Slave DB_ACCESS::f_slave_init(const int roomID)
+{
+    Info_Slave i;
+
+    i.m_id = 0;
+
+    QSqlQuery query(db);
+    if(!query.exec("SELECT * FROM status WHERE `id` = " + QString::number(roomID))){
+        qDebug() << query.lastError() << endl;
+        if(DEBUG_ALLOW_THROW){
+            throw query.lastError();
+            return i;
+        }
+        else
+            assert(false);
+    }
+
+    if(!query.next()){
+        i.m_id = -1;
+        return i;
+    }
+    i.m_id = 123;
+
+    i.m_wind_speed = query.value(4).toInt();
+    i.m_temp_now = query.value(3).toInt();
+    i.m_temp_target = query.value(2).toInt();
+
+    return i;
+}
+
 bool DB_ACCESS::f_slave_login(const int roomID, const string userID) {
     QSqlQuery query(db);
     bool flag = query.exec("SELECT card_id FROM status WHERE id = " + QString::number(roomID));
@@ -663,15 +693,15 @@ bool DB_ACCESS::f_slave_request(const Slave_req req) {
                   "VALUES(:slave_id, :speed, :temp)");
     query.bindValue(":slave_id", req.m_id);
     query.bindValue(":speed", req.m_target_wind);
-    query.bindValue(":temp)", req.m_target_temp);
+    query.bindValue(":temp", req.m_target_temp);
     bool flag = query.exec();
-
-    query.finish();
 
     if(flag)
         return true;
-    else
+    else{
+        qDebug << query.lastError() << endl;
         return false;
+    }
 }
 
 DB_ACCESS::DB_ACCESS() {
