@@ -24,6 +24,7 @@ public:
     static DB_ACCESS &get_Instance();
 
 
+    vector<Info_Slave> f_master_init();
     //  func: f_master_clear_request
     //      master use
     //      do the thing switch on

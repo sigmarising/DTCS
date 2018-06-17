@@ -21,6 +21,34 @@ DB_ACCESS &DB_ACCESS::get_Instance() {
     return _db_access_instance;
 }
 
+vector<Info_Slave> DB_ACCESS::f_master_init() {
+    vector<Info_Slave> v;
+
+    QSqlQuery query(db);
+    if(!query.exec("SELECT * FROM status")){
+        qDebug() << query.lastError();
+        if(DEBUG_ALLOW_THROW){
+            throw query.lastError();
+            return vector<Info_Slave>();
+        }
+        else
+            assert(false);
+    }
+    while(query.next()){
+        Info_Slave i;
+        i.m_id = query.value(0).toInt();
+        i.m_temp_target = query.value(2).toInt();
+        i.m_temp_now = query.value(3).toInt();
+        i.m_wind_speed = query.value(4);
+        i.m_energy = query.value(5).toDouble();
+        i.m_amount = query.value(6).toDouble();
+
+        v.push_back(i);
+    }
+
+    return v;
+}
+
 bool DB_ACCESS::f_master_switch_on() {
 
     QSqlQuery query(db);
@@ -130,7 +158,7 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
 
                 if(!query3.exec("UPDATE status SET target_temp = "
                                 + QString::number(TEMP_COLD_DEFAULT)
-                                + "WHERE slave_id = "
+                                + " WHERE `id` = "
                                 + query1.value(0).toString())){
                     qDebug() << query3.lastError() << endl;
                     if(DEBUG_ALLOW_THROW){
@@ -163,9 +191,9 @@ vector<int> DB_ACCESS::f_master_mode_change(int master_mode) {
 
                 if(!query3.exec("UPDATE status SET target_temp = "
                                 + QString::number(TEMP_HOT_DEFAULT)
-                                + "WHERE slave_id = "
+                                + " WHERE `id` = "
                                 + query1.value(0).toString())){
-                    qDebug() << query1.lastError() << endl;
+                    qDebug() << query3.lastError() << endl;
                     if(DEBUG_ALLOW_THROW){
                         throw db.lastError();
                         return vector<int>();
@@ -309,7 +337,7 @@ vector< pair<int, int> > DB_ACCESS::f_master_update_status(const vector<Info_Sla
     for(int i = 0; i< info.size(); i++){
         QString t = "UPDATE status SET energy = "
                 + QString::number(info[i].m_energy)
-                + " , SET amount = "
+                + " , amount = "
                 + QString::number(info[i].m_amount)
                 + " WHERE id = "
                 + QString::number(info[i].m_id);

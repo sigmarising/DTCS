@@ -7,6 +7,12 @@ MASTER::MASTER() {
     m_switch            = SWITCH_OFF;
     m_mode              = MODE_DEFAULT;
     m_frequent_ms       = FREQUENT_MASTER_DEFAULT;
+
+    vector<Info_Slave> v = db_access.f_master_init();
+
+    for(int i = 0; i < v.size(); i++)
+        m_miniDB.push_back(v[i]);
+
 }
 
 MASTER::MASTER(MASTER &object) {
