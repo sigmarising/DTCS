@@ -500,8 +500,6 @@ bool DB_ACCESS::f_master_report(R_Month &Report) {
         v.push_back(r);
     }
 
-    query.finish();
-
     //    bool flag = db.commit();
 
     if(true){
@@ -513,20 +511,22 @@ bool DB_ACCESS::f_master_report(R_Month &Report) {
         vector<R_Day> v_day;
 
         while(i1 != v.size()){// day
-            while(v[i1].date == v[i2].date) i2++;
+            while(i2 != v.size() && v[i1].date == v[i2].date ) i2++;
 
             QDateTime qd =  v[i1].res_time;
             qd.setTime(QTime());
             R_Day day(qd);
 
             while(j1 != i2){// room
-                while(v[j1].slave_id == v[j2].slave_id) j2++;
+                while(j2 != i2 && v[j1].slave_id == v[j2].slave_id ) j2++;
 
 
                 R_Room room(v[j1].slave_id);
 
                 int i;
+
                 for( i = j1; i < j2; i++){// record
+
                     if(i==j1){
                         if(v[i].speed != 0){// need to add a record
                             QDateTime time_t = v[i].res_time; // clear time
@@ -540,55 +540,63 @@ bool DB_ACCESS::f_master_report(R_Month &Report) {
                         R_Record record(v[i-1].res_time, v[i].res_time, v[i-1].cur_temp, v[i].cur_temp, v[i-1].target_temp, v[i-1].speed);
 
                         room.record_push(record);
-
-                        break;
                     }
+                }
+                i--;
+                if(v[i].speed != 0){
+                    QDateTime time_t = v[i].res_time;
+                    time_t.setTime(QTime(23, 59, 59));
+                    R_Record record(v[i].res_time, time_t, v[i].cur_temp, v[i].cur_temp, v[i].target_temp, v[i].speed);
 
-                    i--;
-                    if(v[i].speed != 0){
-                        QDateTime time_t = v[i].res_time;
-                        time_t.setTime(QTime(23, 59, 59));
-                        R_Record record(v[i].res_time, time_t, v[i].cur_temp, v[i].cur_temp, v[i].target_temp, v[i].speed);
-
-                        room.record_push(record);
-                    }
-
-                    day.record_push(room);
-                    j1 = j2;
+                    room.record_push(record);
                 }
 
-                v_day.push_back(day);
-                i1 = i2;
-            }//
-        }
+                day.record_push(room);
+                j1 = j2;
+            }
+
+            v_day.push_back(day);
+            i1 = i2;
+        }//
+
 
         int c = 0;
-        int i = v_day.size() - 30;
-        int j = v_day.size() - 1;
-        R_Week w1(v_day[i].get_Day(), v_day[i+6].get_Day());
-        R_Week w2(v_day[i+7].get_Day(), v_day[i+13].get_Day());
-        R_Week w3(v_day[i+14].get_Day(), v_day[i+20].get_Day());
-        R_Week w4(v_day[i+21].get_Day(), v_day[i+27].get_Day());
-        R_Week w5(v_day[i+28].get_Day(), v_day[i+29].get_Day());
-
-        for(; i <= j; i++){
-            c++;
-            if(1 <= c && c <= 7)
-                w1.record_push(v_day[i]);
-            else if(8 <= c && c <= 14)
-                w2.record_push(v_day[i]);
-            else if(15 <= c && c <= 21)
-                w3.record_push(v_day[i]);
-            else if(22 <= c && c <= 28)
-                w4.record_push(v_day[i]);
-            else if(29 <= c && c <= 30)
-                w5.record_push(v_day[i]);
+        int x, y;
+        if(v_day.size() >= 30){
+            x = v_day.size() - 30;
+            y = v_day.size() - 1;
         }
-        Report.record_push(w1);
-        Report.record_push(w2);
-        Report.record_push(w3);
-        Report.record_push(w4);
-        Report.record_push(w5);
+        else{
+            x = 0;
+            y = v_day.size() - 1;
+        }
+        i1 = j1 = 0;
+
+        QDateTime T1,T2;
+        for(int i = x; i <= y; i++){
+            c++;
+            if(c == 1){
+                T1 = v_day[i].get_Day();
+                i1 = i;
+            }
+            else if(c == 7){
+                T2 = v_day[i].get_Day();
+                j1 = i;
+                R_Week r(T1, T2);
+                for(int k = i1; k <= j1; k++)
+                    r.record_push(v_day[k]);
+                Report.record_push(r);
+                c = 0;
+            }
+            if(i == y){
+                T2 = v_day[i].get_Day();
+                j1 = i;
+                R_Week r(T1, T2);
+                for(int k = i1; k <= j1; k++)
+                    r.record_push(v_day[k]);
+                Report.record_push(r);
+            }
+        }
         return true;
     }
     else{
@@ -617,7 +625,7 @@ Info_Slave DB_ACCESS::f_slave_init(const int roomID)
         i.m_id = -1;
         return i;
     }
-    i.m_id = 123;
+    i.m_id = -123;
 
     i.m_wind_speed = query.value(4).toInt();
     i.m_temp_now = query.value(3).toInt();

@@ -26,9 +26,10 @@ SLAVE::SLAVE(int const roomID) {
 
     Info_Slave i = db_access.f_slave_init(roomID);
 
-    if(i.m_id == 123){
+    if(i.m_id == -123){
         m_Wind = i.m_wind_speed;
-        m_Temp_Now = i.m_temp_now;
+        if(i.m_temp_now != 0)
+            m_Temp_Now = i.m_temp_now;
         m_Temp_Target = i.m_temp_target;
         m_Energy = i.m_energy;
         m_Amount = i.m_amount;
