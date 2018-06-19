@@ -1,4 +1,4 @@
-﻿    #include <QDebug>
+﻿#include <QDebug>
 #include <QApplication>
 
 #include "Public_Define.h"

@@ -8,15 +8,15 @@ GetReport::GetReport(QWidget *parent) :
     ui(new Ui::GetReport)
 {
     ui->setupUi(this);
-//    setWindowFlags(Qt::FramelessWindowHint);//无边框
-//    setAttribute(Qt::WA_TranslucentBackground);//北京透明
-//    m_areaMovable = geometry();
-//    m_bPressed = false;
+    setWindowFlags(Qt::FramelessWindowHint);//无边框
+    setAttribute(Qt::WA_TranslucentBackground);//北京透明
+    m_areaMovable = geometry();
+    m_bPressed = false;
 
-    ui->quit->setStyleSheet("QPushButton{image: url(E:/DTCS-master/imgs/X2.png); background-color: rgb(255, 255, 255,0);\
-            border-style:none;padding:10px;border-radius:19px;color:#FFFFFF}QPushButton:Hover{background-color: #EC7064;color:#FFF5E7;image: url(E:/DTCS-master/imgs/X2.png);}\
-              QPushButton:Press{background-color:#DC2D1A;color: #F5A996};image: url(E:/DTCS-master/imgs/X2.png);");
-    ui->label->setStyleSheet("image: url(E:/DTCS-master/imgs/report.png);");
+    ui->quit->setStyleSheet("QPushButton{image: url(:/imgs/X2.png); background-color: rgb(255, 255, 255,0);\
+            border-style:none;padding:10px;border-radius:19px;color:#FFFFFF}QPushButton:Hover{background-color: #EC7064;color:#FFF5E7;image: url(:/imgs/X2.png);}\
+              QPushButton:Press{background-color:#DC2D1A;color: #F5A996};image: url(:/imgs/X2.png);");
+    ui->label->setStyleSheet("image: url(:/imgs/report.png);");
     ui->treeView->setStyleSheet(QString(TXTs_STYLESHEET(QTreeView,"#DCE4EC", "#3498DB")));
 
 }

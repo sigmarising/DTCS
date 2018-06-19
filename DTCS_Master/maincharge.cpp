@@ -9,20 +9,20 @@ MainCharge::MainCharge(QWidget *parent) :
 {  
     ui->setupUi(this);
 
-//    setWindowFlags(Qt::FramelessWindowHint);//无边框
-//    setAttribute(Qt::WA_TranslucentBackground);//北京透明
-//    m_areaMovable = geometry();
-//    m_bPressed = false;
+    setWindowFlags(Qt::FramelessWindowHint);//无边框
+    setAttribute(Qt::WA_TranslucentBackground);//北京透明
+    m_areaMovable = geometry();
+    m_bPressed = false;
 
-    ui->label->setStyleSheet("image: url(E:/DTCS-master/imgs/Mbg3.png);");
+    ui->label->setStyleSheet("image: url(:/imgs/Mbg3.png);");
     ui->userinout ->setStyleSheet(BUTTON_STYLESHEET(QPushButton,"#1ABC9C", "#E6F8F5", "#2EE1C1", "#FFFFFF", "#16A086", "#A7EEE6"));
     ui->userout->setStyleSheet(BUTTON_STYLESHEET(QPushButton,"#1ABC9C", "#E6F8F5", "#2EE1C1", "#FFFFFF", "#16A086", "#A7EEE6"));
     ui->modelC->setStyleSheet(BUTTON_STYLESHEET(QPushButton,"#34495E", "#FFFFFF", "#4E6D8C", "#F0F0F0", "#2D3E50", "#B8C6D1"));
     ui->report->setStyleSheet(BUTTON_STYLESHEET(QPushButton,"#34495E", "#FFFFFF", "#4E6D8C", "#F0F0F0", "#2D3E50", "#B8C6D1"));
     ui->onoff->setStyleSheet(BUTTON_STYLESHEET(QPushButton,"#E74C3C", "#FFFFFF", "#EC7064", "#FFF5E7", "#DC2D1A", "#F5A996"));
-    ui->quit->setStyleSheet("QPushButton{image: url(E:/DTCS-master/imgs/X2.png); background-color: rgb(255, 255, 255,0);\
-            border-style:none;padding:10px;border-radius:19px;color:#FFFFFF}QPushButton:Hover{background-color: #EC7064;color:#FFF5E7;image: url(E:/DTCS-master/imgs/X2.png);}\
-              QPushButton:Press{background-color:#DC2D1A;color: #F5A996};image: url(E:/DTCS-master/imgs/X2.png);");
+    ui->quit->setStyleSheet("QPushButton{image: url(:/imgs/X2.png); background-color: rgb(255, 255, 255,0);\
+            border-style:none;padding:10px;border-radius:19px;color:#FFFFFF}QPushButton:Hover{background-color: #EC7064;color:#FFF5E7;image: url(:/imgs/X2.png);}\
+              QPushButton:Press{background-color:#DC2D1A;color: #F5A996};image: url(:/imgs/X2.png);");
     ui->theFre->setStyleSheet(QString(TXT_STYLESHEET(QLineEdit,"#DCE4EC", "#3498DB")));
     ui->themodel->setStyleSheet(QString(TXT_STYLESHEET(QLineEdit,"#DCE4EC", "#3498DB")));
     ui->status->setStyleSheet(QString((TXTs_STYLESHEET(QTextEdit,"#DCE4EC", "#3498DB"))));
