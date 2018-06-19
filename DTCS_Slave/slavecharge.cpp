@@ -108,9 +108,9 @@ void Slavecharge::showstatus()
         ui->WorkModel->setText("COLD WIND");
     else
         ui->WorkModel->setText("WARM WIND");
-    ui->showAmount->display(QString::number(TSLAVE->f_get_Amount(),10,2));
-    ui->showEnergy->display(QString::number(TSLAVE->f_get_Energy(),10,2));
-    ui->tempNow->display(QString::number(TSLAVE->f_get_temp_now(),10,2));
+    ui->showAmount->display(QString::number(TSLAVE->f_get_Amount(),10,1));
+    ui->showEnergy->display(QString::number(TSLAVE->f_get_Energy(),10,1));
+    ui->tempNow->display(QString::number(TSLAVE->f_get_temp_now(),10,1));
     ui->showTemp->display(QString::number(TSLAVE->f_get_temp_target()));
     ui->showWind->display(QString::number(TSLAVE->f_get_wind()));
   //  qDebug()<<"Show"<<endl;
