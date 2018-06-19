@@ -123,7 +123,7 @@ bool SLAVE::f_check_and_auto_adjust() {
 
     double delta = fabs(double(m_Temp_Target) - m_Temp_Now);
 
-    if(delta < 0.1){
+    if(delta < 0.1 && (!m_auto_adjust)){
         if(!m_auto_adjust)
             m_Wind_remember = m_Wind;
         m_auto_adjust = true;

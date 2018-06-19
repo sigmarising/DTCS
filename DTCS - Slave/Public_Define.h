@@ -20,7 +20,7 @@ extern int g_season;
 #define DB_CONNECT_TYPE     "QMYSQL"
 #define DB_CONNECT_NAME     "DTCS"
 //#define DB_HOST_NAME        "api.mywsq.cn"
-#define DB_HOST_NAME        "10.28.237.13"
+#define DB_HOST_NAME        "localhost"
 #define DB_USER_NAME        "root"
 #define DB_PASSWORD         "bupt"
 #define DB_DATABASE_NAME    "bupt"

@@ -26,21 +26,35 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        nouse.cpp \
     DB_ACCESS.cpp \
     MASTER.cpp \
     SLAVE.cpp \
     Public_Define.cpp \
-    Report.cpp
+    Report.cpp \
+    room.cpp \
+    slavecharge.cpp \
+    thread_one.cpp \
+    login2.cpp \
+    thread_two.cpp
 
 HEADERS += \
-        nouse.h \
     DB_ACCESS.h \
     MASTER.h \
     SLAVE.h \
     Public_Define.h \
     Struct_Define.h \
-    Report.h
+    Report.h \
+    room.h \
+    slavecharge.h \
+    thread_one.h \
+    login2.h \
+    thread_two.h \
+    stylesheet.h
 
 FORMS += \
-        nouse.ui
+    room.ui \
+    slavecharge.ui \
+    login2.ui
+
+RESOURCES += \
+    imgs.qrc

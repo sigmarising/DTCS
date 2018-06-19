@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/imgs">
+        <file>bg5.png</file>
+        <file>logoin2.png</file>
+        <file>transparent.png</file>
+        <file>X2.png</file>
+    </qresource>
+</RCC>
