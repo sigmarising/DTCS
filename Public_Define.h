@@ -45,7 +45,7 @@ extern int g_season;
 
 
 //  define some temp value
-#define TEMP_HOT_MIN        25
+#define TEMP_HOT_MIN        26
 #define TEMP_HOT_MAX        30
 #define TEMP_COLD_MIN       18
 #define TEMP_COLD_MAX       25
